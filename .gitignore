@@ -20,6 +20,9 @@
 !compose.yaml
 !config.example.yaml
 !*.md
+!*.json
+!*.yaml
+!examples/
 !.github/workflows/ci.yaml
 !.github/workflows/release.yaml
 !.pre-commit-config.yaml
