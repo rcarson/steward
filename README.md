@@ -46,7 +46,7 @@ chmod 600 /opt/stack-agent/.env
 cd /opt/stack-agent && docker compose up -d
 ```
 
-The `compose.yaml` in this repository is the deployment manifest for the agent itself. Copy it to `/opt/stack-agent/compose.yaml` and adjust the volume mounts if needed:
+The `examples/docker-compose/compose.yaml` in this repository is the deployment manifest for the agent itself. Copy it to `/opt/stack-agent/compose.yaml` and adjust the volume mounts if needed:
 
 ```yaml
 services:

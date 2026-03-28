@@ -17,7 +17,6 @@
 !README.md
 !LICENSE
 !Dockerfile
-!compose.yaml
 !config.example.yaml
 !*.md
 !*.json
