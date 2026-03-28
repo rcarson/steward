@@ -10,17 +10,17 @@ linters:
     - errcheck
     - staticcheck
     - unused
-
-linters-settings:
-  errcheck:
-    # Don't require checking errors on fmt.Fprintf/fmt.Fprintln to stderr.
-    exclude-functions:
-      - fmt.Fprintf
-      - fmt.Fprintln
+  settings:
+    errcheck:
+      # Don't require checking errors on fmt.Fprintf/fmt.Fprintln to stderr.
+      exclude-functions:
+        - fmt.Fprintf
+        - fmt.Fprintln
 
 issues:
-  exclude-rules:
-    # Test files are allowed to use t.Fatal without wrapping errors.
-    - path: _test\.go
-      linters:
-        - errcheck
+  exclusions:
+    rules:
+      # Test files are allowed to use t.Fatal without wrapping errors.
+      - path: _test\.go
+        linters:
+          - errcheck
