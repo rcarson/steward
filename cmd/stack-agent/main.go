@@ -85,7 +85,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 	gitClient := git.New()
 	composeRunner := compose.NewDockerRunner()
 
-	statePath := filepath.Join(cfg.Stacks[0].WorkDir, ".state.json")
+	workDir := "/opt/stack-agent/data"
+	if len(cfg.Stacks) > 0 {
+		workDir = cfg.Stacks[0].WorkDir
+	}
+	statePath := filepath.Join(workDir, ".state.json")
 	stateStore, err := state.NewFileStore(statePath)
 	if err != nil {
 		fmt.Fprintf(stderr, "stack-agent: failed to initialize state store: %v\n", err)
