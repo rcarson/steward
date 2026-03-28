@@ -1,0 +1,21 @@
+# Global defaults (all overridable per stack)
+defaults:
+  poll_interval: 60
+  branch: main
+  work_dir: /var/lib/stack-agent/stacks
+  token: ${STACK_AGENT_DEFAULT_TOKEN}  # optional
+
+stacks:
+  - name: immich
+    repo: https://github.com/example/host-services.git
+    path: stacks/immich
+    branch: main
+    token: ${HOST_SERVICES_TOKEN}
+    env_file: /etc/stacks/immich.env
+    poll_interval: 60
+
+  - name: nextcloud
+    repo: https://github.com/example/host-services.git
+    path: stacks/nextcloud
+    env_file: /etc/stacks/nextcloud.env
+    poll_interval: 120
