@@ -37,7 +37,7 @@ func NewFileStore(path string) (*FileStore, error) {
 		}
 		return nil, fmt.Errorf("state: open %s: %w", path, err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	if err := json.NewDecoder(f).Decode(&fs.data); err != nil {
 		return nil, fmt.Errorf("state: decode %s: %w", path, err)
@@ -72,18 +72,18 @@ func (fs *FileStore) Set(name, hash string) error {
 	tmpName := tmp.Name()
 
 	if err := json.NewEncoder(tmp).Encode(fs.data); err != nil {
-		tmp.Close()
-		os.Remove(tmpName)
+		_ = tmp.Close()
+		_ = os.Remove(tmpName)
 		return fmt.Errorf("state: encode to temp file: %w", err)
 	}
 
 	if err := tmp.Close(); err != nil {
-		os.Remove(tmpName)
+		_ = os.Remove(tmpName)
 		return fmt.Errorf("state: close temp file: %w", err)
 	}
 
 	if err := os.Rename(tmpName, fs.path); err != nil {
-		os.Remove(tmpName)
+		_ = os.Remove(tmpName)
 		return fmt.Errorf("state: rename temp to %s: %w", fs.path, err)
 	}
 
