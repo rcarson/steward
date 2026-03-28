@@ -22,8 +22,10 @@
 !*.json
 !*.yaml
 !examples/
+!.github/CODEOWNERS
 !.github/workflows/ci.yaml
 !.github/workflows/release.yaml
+!.github/dependabot.yaml
 !.pre-commit-config.yaml
 !.golangci.yaml
 
