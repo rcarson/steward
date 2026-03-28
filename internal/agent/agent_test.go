@@ -54,20 +54,20 @@ func (m *mockGit) SyncPath(ctx context.Context, repo, branch, path, workDir, nam
 type mockCompose struct {
 	mu sync.Mutex
 
-	upFn              func(ctx context.Context, composePath, envFile string) error
+	upFn              func(ctx context.Context, composePath, envFile, projectName string) error
 	findComposeFileFn func(path string) string
 
 	upCalls              int
 	findComposeFileCalls int
 }
 
-func (m *mockCompose) Up(ctx context.Context, composePath, envFile string) error {
+func (m *mockCompose) Up(ctx context.Context, composePath, envFile, projectName string) error {
 	m.mu.Lock()
 	m.upCalls++
 	fn := m.upFn
 	m.mu.Unlock()
 	if fn != nil {
-		return fn(ctx, composePath, envFile)
+		return fn(ctx, composePath, envFile, projectName)
 	}
 	return nil
 }
@@ -187,7 +187,7 @@ func TestHashChanged(t *testing.T) {
 		},
 	}
 	c := &mockCompose{
-		upFn: func(_ context.Context, _, _ string) error {
+		upFn: func(_ context.Context, _, _, _ string) error {
 			mu.Lock()
 			order = append(order, "up")
 			mu.Unlock()
@@ -252,7 +252,7 @@ func TestUpFailure(t *testing.T) {
 		},
 	}
 	c := &mockCompose{
-		upFn: func(_ context.Context, _, _ string) error {
+		upFn: func(_ context.Context, _, _, _ string) error {
 			return errors.New("compose up failed")
 		},
 	}

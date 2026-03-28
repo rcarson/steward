@@ -85,12 +85,12 @@ func TestUp_CommandArgs_NoEnvFile(t *testing.T) {
 	dockerBin := fakeDockerBinary(t)
 	t.Setenv("PATH", filepath.Dir(dockerBin))
 
-	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "")
+	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "", "myapp")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	wantArgs := []string{"compose", "-f", "/srv/myapp/compose.yml", "up", "-d", "--remove-orphans"}
+	wantArgs := []string{"compose", "--project-name", "myapp", "-f", "/srv/myapp/compose.yml", "up", "-d", "--remove-orphans"}
 	assertArgs(t, cap.args, wantArgs)
 }
 
@@ -101,17 +101,37 @@ func TestUp_CommandArgs_WithEnvFile(t *testing.T) {
 	dockerBin := fakeDockerBinary(t)
 	t.Setenv("PATH", filepath.Dir(dockerBin))
 
-	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "/etc/myapp/.env")
+	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "/etc/myapp/.env", "myapp")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	wantArgs := []string{
-		"compose", "-f", "/srv/myapp/compose.yml",
+		"compose", "--project-name", "myapp",
+		"-f", "/srv/myapp/compose.yml",
 		"--env-file", "/etc/myapp/.env",
 		"up", "-d", "--remove-orphans",
 	}
 	assertArgs(t, cap.args, wantArgs)
+}
+
+func TestUp_CommandArgs_ProjectNameOmittedWhenEmpty(t *testing.T) {
+	var cap capturedCmd
+	r := &DockerRunner{newCmd: fakeCmd(&cap, 0, "")}
+
+	dockerBin := fakeDockerBinary(t)
+	t.Setenv("PATH", filepath.Dir(dockerBin))
+
+	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	for i, arg := range cap.args {
+		if arg == "--project-name" {
+			t.Errorf("--project-name should not appear when projectName is empty, found at index %d", i)
+		}
+	}
 }
 
 // --- Up: --env-file omitted when envFile is empty ---
@@ -123,7 +143,7 @@ func TestUp_EnvFileOmittedWhenEmpty(t *testing.T) {
 	dockerBin := fakeDockerBinary(t)
 	t.Setenv("PATH", filepath.Dir(dockerBin))
 
-	if err := r.Up(context.Background(), "/srv/myapp/compose.yml", ""); err != nil {
+	if err := r.Up(context.Background(), "/srv/myapp/compose.yml", "", "myapp"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
@@ -145,7 +165,7 @@ func TestUp_NonZeroExit_ReturnsWrappedStderr(t *testing.T) {
 	dockerBin := fakeDockerBinary(t)
 	t.Setenv("PATH", filepath.Dir(dockerBin))
 
-	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "")
+	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "", "myapp")
 	if err == nil {
 		t.Fatal("expected error on non-zero exit, got nil")
 	}
@@ -161,7 +181,7 @@ func TestUp_DockerNotFound_ReturnsClearError(t *testing.T) {
 	// Clear PATH so docker cannot be found.
 	t.Setenv("PATH", "")
 
-	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "")
+	err := r.Up(context.Background(), "/srv/myapp/compose.yml", "", "myapp")
 	if err == nil {
 		t.Fatal("expected error when docker is not found, got nil")
 	}

@@ -105,7 +105,7 @@ func (s *Stack) poll(ctx context.Context) {
 	envFile := resolveEnvFile(s.cfg.WorkDir, s.cfg.Name, s.cfg.EnvFile)
 
 	// Step 6: run compose up.
-	if err := s.compose.Up(ctx, composePath, envFile); err != nil {
+	if err := s.compose.Up(ctx, composePath, envFile, s.cfg.Name); err != nil {
 		s.log.Error("agent: compose up error", "err", err)
 		return
 	}

@@ -13,8 +13,9 @@ import (
 
 // Runner provides docker compose operations used by stack-agent.
 type Runner interface {
-	// Up runs: docker compose -f <composePath> [--env-file <envFile>] up -d --remove-orphans
-	Up(ctx context.Context, composePath, envFile string) error
+	// Up runs: docker compose [--project-name <projectName>] -f <composePath> [--env-file <envFile>] up -d --remove-orphans
+	// projectName is optional; pass empty string to omit it and let Docker derive the name from the directory.
+	Up(ctx context.Context, composePath, envFile, projectName string) error
 
 	// FindComposeFile returns the full path to the compose file found under path,
 	// checking compose.yml, compose.yaml, docker-compose.yml, docker-compose.yaml
@@ -39,20 +40,25 @@ func NewDockerRunner() *DockerRunner {
 }
 
 // Up runs docker compose up for the given compose file, optionally loading an
-// env-file. It returns a wrapped error that includes stderr output on non-zero exit.
-func (r *DockerRunner) Up(ctx context.Context, composePath, envFile string) error {
+// env-file and setting a project name. It returns a wrapped error that includes
+// stderr output on non-zero exit.
+func (r *DockerRunner) Up(ctx context.Context, composePath, envFile, projectName string) error {
 	dockerPath, err := exec.LookPath("docker")
 	if err != nil {
 		return fmt.Errorf("compose: docker binary not found: %w", err)
 	}
 
-	args := []string{"compose", "-f", composePath}
+	args := []string{"compose"}
+	if projectName != "" {
+		args = append(args, "--project-name", projectName)
+	}
+	args = append(args, "-f", composePath)
 	if envFile != "" {
 		args = append(args, "--env-file", envFile)
 	}
 	args = append(args, "up", "-d", "--remove-orphans")
 
-	slog.Info("compose: running docker compose up", "composePath", composePath, "envFile", envFile)
+	slog.Info("compose: running docker compose up", "composePath", composePath, "envFile", envFile, "projectName", projectName)
 
 	cmd := r.newCmd(ctx, dockerPath, args...)
 	var stderr bytes.Buffer
