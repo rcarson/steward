@@ -14,4 +14,6 @@ COPY --from=builder /stack-agent /stack-agent
 USER agent
 WORKDIR /opt/stack-agent
 
+EXPOSE 2112
+
 ENTRYPOINT ["/stack-agent"]
