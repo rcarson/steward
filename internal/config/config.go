@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -181,6 +182,11 @@ func Load(path string) (*Config, error) {
 			return nil, fmt.Errorf("config: duplicate stack name %q", merged.Name)
 		}
 		seenNames[merged.Name] = struct{}{}
+
+		// Validate env_file is relative (not absolute).
+		if filepath.IsAbs(merged.EnvFile) {
+			return nil, fmt.Errorf("config: stack %q: env_file must be a relative path (got %q); it is resolved relative to work_dir", merged.Name, merged.EnvFile)
+		}
 
 		// Validate repo URL scheme.
 		if !isHTTPS(merged.Repo) {

@@ -33,13 +33,13 @@ stacks:
     path: stacks/immich
     branch: main
     token: ${HOST_SERVICES_TOKEN}
-    env_file: /etc/stacks/immich.env
+    env_file: immich.env
     poll_interval: 60
 
   - name: nextcloud
     repo: https://github.com/mtc/host-services.git
     path: stacks/nextcloud
-    env_file: /etc/stacks/nextcloud.env
+    env_file: nextcloud.env
     poll_interval: 120
 `
 
@@ -354,6 +354,23 @@ stacks:
 	}
 	if cfg.Stacks[0].Token != "implicit-token" {
 		t.Errorf("expected implicit token %q, got %q", "implicit-token", cfg.Stacks[0].Token)
+	}
+}
+
+func TestLoad_AbsoluteEnvFileRejected(t *testing.T) {
+	p := writeTemp(t, `
+stacks:
+  - name: mystack
+    repo: https://github.com/example/repo.git
+    path: stacks/mystack
+    env_file: /etc/stacks/mystack.env
+`)
+	_, err := Load(p)
+	if err == nil {
+		t.Fatal("expected error for absolute env_file, got nil")
+	}
+	if !strings.Contains(err.Error(), "relative") {
+		t.Errorf("error should mention 'relative', got: %v", err)
 	}
 }
 

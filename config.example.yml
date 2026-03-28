@@ -10,11 +10,11 @@ stacks:
     repo: https://github.com/example/host-services.git
     path: stacks/immich
     branch: main
-    env_file: /opt/stack-agent/env/immich.env
     poll_interval: 60
+    # env_file defaults to {work_dir}/immich.env if the file exists — omit if not needed
+    # env_file: immich.env  # relative to work_dir
 
   - name: nextcloud
     repo: https://github.com/example/host-services.git
     path: stacks/nextcloud
-    env_file: /opt/stack-agent/env/nextcloud.env
     poll_interval: 120

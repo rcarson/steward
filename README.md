@@ -114,7 +114,7 @@ stacks:
 | `path` | yes | Subdirectory within the repo that contains the `compose.yml`. |
 | `branch` | no | Overrides `defaults.branch`. |
 | `token` | no | Overrides `defaults.token`. |
-| `env_file` | no | Path to a host-local env file passed to compose as `--env-file`. |
+| `env_file` | no | Relative path (from `work_dir`) to an env file passed to compose as `--env-file`. Defaults to `{name}.env` in `work_dir` if that file exists. |
 | `poll_interval` | no | Overrides `defaults.poll_interval`. Minimum: `10` seconds. |
 
 ### Token and environment variable interpolation

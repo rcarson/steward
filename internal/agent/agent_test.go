@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
@@ -431,5 +432,37 @@ func TestNoComposeFile(t *testing.T) {
 	}
 	if setCalls != 0 {
 		t.Errorf("expected state not updated when no compose file, got %d", setCalls)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// resolveEnvFile tests
+// ---------------------------------------------------------------------------
+
+func TestResolveEnvFile_ExplicitRelativePath(t *testing.T) {
+	dir := t.TempDir()
+	got := resolveEnvFile(dir, "mystack", "custom.env")
+	if got != filepath.Join(dir, "custom.env") {
+		t.Errorf("expected %q, got %q", filepath.Join(dir, "custom.env"), got)
+	}
+}
+
+func TestResolveEnvFile_DefaultExists(t *testing.T) {
+	dir := t.TempDir()
+	envPath := filepath.Join(dir, "mystack.env")
+	if err := os.WriteFile(envPath, []byte("FOO=bar"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got := resolveEnvFile(dir, "mystack", "")
+	if got != envPath {
+		t.Errorf("expected %q, got %q", envPath, got)
+	}
+}
+
+func TestResolveEnvFile_DefaultMissing(t *testing.T) {
+	dir := t.TempDir()
+	got := resolveEnvFile(dir, "mystack", "")
+	if got != "" {
+		t.Errorf("expected empty string when default env file missing, got %q", got)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"math/rand/v2"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -100,22 +101,39 @@ func (s *Stack) poll(ctx context.Context) {
 		return
 	}
 
-	// Step 5: run compose up.
-	if err := s.compose.Up(ctx, composePath, s.cfg.EnvFile); err != nil {
+	// Step 5: resolve env file relative to work_dir.
+	envFile := resolveEnvFile(s.cfg.WorkDir, s.cfg.Name, s.cfg.EnvFile)
+
+	// Step 6: run compose up.
+	if err := s.compose.Up(ctx, composePath, envFile); err != nil {
 		s.log.Error("agent: compose up error", "err", err)
 		return
 	}
 
-	// Step 6: update state only after successful deploy.
+	// Step 7: update state only after successful deploy.
 	if err := s.state.Set(s.cfg.Name, newHash); err != nil {
 		s.log.Error("agent: state set error", "err", err)
 		// Continue — deploy succeeded even if we failed to persist the hash.
 	}
 
-	// Step 7: log success.
+	// Step 8: log success.
 	s.log.Info("agent: deploy success",
 		"old_hash", oldHash,
 		"new_hash", newHash,
 		"duration", time.Since(start).String(),
 	)
+}
+
+// resolveEnvFile returns the absolute path to the env file for a stack.
+// If envFile is set, it is resolved relative to workDir.
+// Otherwise, {workDir}/{name}.env is used if it exists; empty string if not.
+func resolveEnvFile(workDir, name, envFile string) string {
+	if envFile != "" {
+		return filepath.Join(workDir, envFile)
+	}
+	candidate := filepath.Join(workDir, name+".env")
+	if _, err := os.Stat(candidate); err == nil {
+		return candidate
+	}
+	return ""
 }
