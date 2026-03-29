@@ -7,11 +7,10 @@ RUN go build -ldflags "-X main.Version=${VERSION}" -o /steward ./cmd/steward
 
 FROM alpine:3.21
 
-RUN adduser -D -u 1000 agent && mkdir -p /opt/steward/data && chown -R agent:agent /opt/steward
+RUN mkdir -p /opt/steward/data
 
 COPY --from=builder /steward /steward
 
-USER agent
 WORKDIR /opt/steward
 
 EXPOSE 2112

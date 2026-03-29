@@ -195,7 +195,7 @@ go build -o steward ./cmd/steward
 docker build -t steward .
 ```
 
-The Dockerfile uses a two-stage build: Go 1.26 Alpine builder, Alpine 3.21 runtime. The binary runs as a non-root user (`agent`, uid 1000). No git binary is included in the image — go-git is pure Go.
+The Dockerfile uses a two-stage build: Go 1.26 Alpine builder, Alpine 3.21 runtime. The binary runs as root (required for Docker socket access). No git binary is included in the image — go-git is pure Go.
 
 ## Running tests
 
