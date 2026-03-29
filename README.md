@@ -24,7 +24,7 @@ Git operations use [go-git](https://github.com/go-git/go-git), a pure Go impleme
 **1. Create the directory layout on the host.**
 
 ```bash
-mkdir -p /opt/steward/data
+mkdir -p /opt/steward/config /opt/steward/data
 ```
 
 **2. Write a config file.**
@@ -70,6 +70,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config.yaml:/opt/steward/config.yaml:ro
+      - ./config:/opt/steward/config:ro
       - ./data:/opt/steward/data
 ```
 
@@ -114,6 +115,7 @@ stacks:
 | `poll_interval` | int | `60` | Polling interval in seconds. Applied to all stacks unless overridden. |
 | `branch` | string | `main` | Git branch to track. |
 | `work_dir` | string | `/opt/steward/data` | Directory where repos are checked out and state is stored. |
+| `config_dir` | string | `/opt/steward/config` | Directory where per-stack env files are looked up by default. |
 | `token` | string | _(empty)_ | Auth token for private repos. Supports `${ENV_VAR}` interpolation. |
 
 ### Per-stack fields
@@ -125,7 +127,7 @@ stacks:
 | `path` | yes | Subdirectory within the repo that contains the `compose.yml`. |
 | `branch` | no | Overrides `defaults.branch`. |
 | `token` | no | Overrides `defaults.token`. |
-| `env_file` | no | Relative path (from `work_dir`) to an env file passed to compose as `--env-file`. Defaults to `{name}.env` in `work_dir` if that file exists. |
+| `env_file` | no | Path to an env file passed to compose as `--env-file`. Absolute paths are used as-is; relative paths resolve from `config_dir`. Defaults to `{config_dir}/{name}.env` if that file exists. |
 | `poll_interval` | no | Overrides `defaults.poll_interval`. Minimum: `10` seconds. |
 
 ### Token and environment variable interpolation

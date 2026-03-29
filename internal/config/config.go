@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -16,6 +15,7 @@ type rawDefaults struct {
 	PollInterval int    `yaml:"poll_interval"`
 	Branch       string `yaml:"branch"`
 	WorkDir      string `yaml:"work_dir"`
+	ConfigDir    string `yaml:"config_dir"`
 	Token        string `yaml:"token"`
 }
 
@@ -47,6 +47,7 @@ type StackConfig struct {
 	EnvFile      string
 	ComposeFile  string
 	WorkDir      string
+	ConfigDir    string
 	PollInterval int
 }
 
@@ -74,6 +75,7 @@ func interpolate(s string) string {
 func interpolateDefaults(d rawDefaults) rawDefaults {
 	d.Branch = interpolate(d.Branch)
 	d.WorkDir = interpolate(d.WorkDir)
+	d.ConfigDir = interpolate(d.ConfigDir)
 	d.Token = interpolate(d.Token)
 	return d
 }
@@ -111,6 +113,7 @@ func mergeStack(raw rawStack, defaults rawDefaults) StackConfig {
 		EnvFile:      interpolate(raw.EnvFile),
 		ComposeFile:  interpolate(raw.ComposeFile),
 		WorkDir:      defaults.WorkDir,
+		ConfigDir:    defaults.ConfigDir,
 		PollInterval: pollInterval,
 	}
 }
@@ -158,6 +161,11 @@ func Load(path string) (*Config, error) {
 		defaults.WorkDir = "/opt/steward/data"
 	}
 
+	// Apply default config_dir when not set.
+	if defaults.ConfigDir == "" {
+		defaults.ConfigDir = "/opt/steward/config"
+	}
+
 	// Validate and merge stacks.
 	seenNames := make(map[string]struct{}, len(raw.Stacks))
 	stacks := make([]StackConfig, 0, len(raw.Stacks))
@@ -183,11 +191,6 @@ func Load(path string) (*Config, error) {
 		}
 		seenNames[merged.Name] = struct{}{}
 
-		// Validate env_file is relative (not absolute).
-		if filepath.IsAbs(merged.EnvFile) {
-			return nil, fmt.Errorf("config: stack %q: env_file must be a relative path (got %q); it is resolved relative to work_dir", merged.Name, merged.EnvFile)
-		}
-
 		// Validate repo URL scheme.
 		if !isHTTPS(merged.Repo) {
 			return nil, fmt.Errorf("config: stack %q: repo must use HTTPS URL (got %q); SSH and other protocols are not supported", merged.Name, merged.Repo)
@@ -196,7 +199,6 @@ func Load(path string) (*Config, error) {
 		// Validate poll_interval minimum.
 		const minPollInterval = 10
 		if merged.PollInterval < minPollInterval {
-			// Build the error without the token.
 			msg := fmt.Sprintf("config: stack %q: poll_interval must be at least %d seconds (got %d)", merged.Name, minPollInterval, merged.PollInterval)
 			msg = redactToken(msg, merged.Token)
 			return nil, fmt.Errorf("%s", msg)

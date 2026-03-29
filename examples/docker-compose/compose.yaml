@@ -21,4 +21,5 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config.yaml:/opt/steward/config.yaml:ro
+      - ./config:/opt/steward/config:ro
       - ./data:/opt/steward/data

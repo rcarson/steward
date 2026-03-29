@@ -108,8 +108,8 @@ func (s *Stack) poll(ctx context.Context) {
 		return
 	}
 
-	// Step 5: resolve env file relative to work_dir.
-	envFile := resolveEnvFile(s.cfg.WorkDir, s.cfg.Name, s.cfg.EnvFile)
+	// Step 5: resolve env file from config_dir.
+	envFile := resolveEnvFile(s.cfg.ConfigDir, s.cfg.Name, s.cfg.EnvFile)
 
 	// Step 6: run compose up.
 	if err := s.compose.Up(ctx, composePath, envFile, s.cfg.Name); err != nil {
@@ -135,13 +135,17 @@ func (s *Stack) poll(ctx context.Context) {
 }
 
 // resolveEnvFile returns the absolute path to the env file for a stack.
-// If envFile is set, it is resolved relative to workDir.
-// Otherwise, {workDir}/{name}.env is used if it exists; empty string if not.
-func resolveEnvFile(workDir, name, envFile string) string {
+// If envFile is set and absolute, it is used as-is. If relative, it is
+// resolved relative to configDir. Otherwise, {configDir}/{name}.env is
+// used if it exists; empty string if not.
+func resolveEnvFile(configDir, name, envFile string) string {
 	if envFile != "" {
-		return filepath.Join(workDir, envFile)
+		if filepath.IsAbs(envFile) {
+			return envFile
+		}
+		return filepath.Join(configDir, envFile)
 	}
-	candidate := filepath.Join(workDir, name+".env")
+	candidate := filepath.Join(configDir, name+".env")
 	if _, err := os.Stat(candidate); err == nil {
 		return candidate
 	}

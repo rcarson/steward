@@ -125,6 +125,7 @@ func stackCfg(name string) config.StackConfig {
 		Branch:       "main",
 		Path:         "services/app",
 		WorkDir:      "/tmp/stacks",
+		ConfigDir:    "/tmp/config",
 		PollInterval: 0,
 	}
 }
@@ -465,5 +466,14 @@ func TestResolveEnvFile_DefaultMissing(t *testing.T) {
 	got := resolveEnvFile(dir, "mystack", "")
 	if got != "" {
 		t.Errorf("expected empty string when default env file missing, got %q", got)
+	}
+}
+
+func TestResolveEnvFile_ExplicitAbsolutePath(t *testing.T) {
+	dir := t.TempDir()
+	abs := "/etc/stacks/mystack.env"
+	got := resolveEnvFile(dir, "mystack", abs)
+	if got != abs {
+		t.Errorf("expected absolute path %q to be used as-is, got %q", abs, got)
 	}
 }

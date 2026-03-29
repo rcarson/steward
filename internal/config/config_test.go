@@ -357,7 +357,7 @@ stacks:
 	}
 }
 
-func TestLoad_AbsoluteEnvFileRejected(t *testing.T) {
+func TestLoad_AbsoluteEnvFileAccepted(t *testing.T) {
 	p := writeTemp(t, `
 stacks:
   - name: mystack
@@ -365,12 +365,28 @@ stacks:
     path: stacks/mystack
     env_file: /etc/stacks/mystack.env
 `)
-	_, err := Load(p)
-	if err == nil {
-		t.Fatal("expected error for absolute env_file, got nil")
+	cfg, err := Load(p)
+	if err != nil {
+		t.Fatalf("expected absolute env_file to be accepted, got error: %v", err)
 	}
-	if !strings.Contains(err.Error(), "relative") {
-		t.Errorf("error should mention 'relative', got: %v", err)
+	if cfg.Stacks[0].EnvFile != "/etc/stacks/mystack.env" {
+		t.Errorf("expected env_file %q, got %q", "/etc/stacks/mystack.env", cfg.Stacks[0].EnvFile)
+	}
+}
+
+func TestLoad_ConfigDirDefault(t *testing.T) {
+	p := writeTemp(t, `
+stacks:
+  - name: mystack
+    repo: https://github.com/example/repo.git
+    path: stacks/mystack
+`)
+	cfg, err := Load(p)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Stacks[0].ConfigDir != "/opt/steward/config" {
+		t.Errorf("expected default config_dir %q, got %q", "/opt/steward/config", cfg.Stacks[0].ConfigDir)
 	}
 }
 

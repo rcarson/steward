@@ -3,6 +3,7 @@ defaults:
   poll_interval: 60
   branch: main
   # work_dir defaults to /opt/steward/data — omit unless you need a custom path
+  # config_dir defaults to /opt/steward/config — where <stack>.env files are looked up
   # token is not required — steward falls back to STEWARD_DEFAULT_TOKEN automatically
 
 stacks:
@@ -11,8 +12,8 @@ stacks:
     path: stacks/immich
     branch: main
     poll_interval: 60
-    # env_file defaults to {work_dir}/immich.env if the file exists — omit if not needed
-    # env_file: immich.env  # relative to work_dir
+    # env_file defaults to {config_dir}/immich.env if the file exists — omit if not needed
+    # env_file: immich.env  # relative to config_dir, or use an absolute path
 
   - name: nextcloud
     repo: https://github.com/example/host-services.git

@@ -7,7 +7,7 @@ RUN go build -ldflags "-X main.Version=${VERSION}" -o /steward ./cmd/steward
 
 FROM docker:27-cli
 
-RUN mkdir -p /opt/steward/data
+RUN mkdir -p /opt/steward/config /opt/steward/data
 
 COPY --from=builder /steward /steward
 
