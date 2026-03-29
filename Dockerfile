@@ -5,7 +5,7 @@ WORKDIR /build
 COPY . .
 RUN go build -ldflags "-X main.Version=${VERSION}" -o /steward ./cmd/steward
 
-FROM alpine:3.21
+FROM docker:27-cli
 
 RUN mkdir -p /opt/steward/data
 
