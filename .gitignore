@@ -28,6 +28,7 @@
 !.github/dependabot.yaml
 !.pre-commit-config.yaml
 !.golangci.yaml
+!.claude/
 
 # ...even if they are in subdirectories
 !*/
